@@ -36,7 +36,7 @@ plt.savefig(f"./Umap.jpg")
 plt.rcParams["figure.figsize"] = (8, 8)
 sc.pl.spatial(adata, img_key="hires", color="clusters", size=1.5,title='STGNNKs')
 plt.savefig(f'./clusters.jpg', bbox_inches='tight',dpi=150)
-#热图
+# 热图
 sc.tl.rank_genes_groups(adata, "clusters", method="t-test")
 sc.pl.rank_genes_groups_heatmap(adata,n_genes=5, groupby="clusters")
 plt.savefig(f'./clusters_heatmap.jpg')

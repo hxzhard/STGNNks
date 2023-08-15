@@ -310,7 +310,7 @@ def STGNNks_on_ST(args):
                            )
         input_size = datas.n_vars
         result_fp = open("./result_matric.csv", mode="w")
-        c_true=10
+        c_true=20
         pred_list = []
         Encode = model(dims=[input_size, 200, 100,20], n_clusters=c_true, noise_sd=2.5)
         y = datas.raw.X
@@ -323,12 +323,11 @@ def STGNNks_on_ST(args):
 
         df = pd.DataFrame(X_embedding)
         df = df.fillna(0)
-
+        df.to_csv(f'./embedding matrix.csv')
         print("-----------Clustering-------------")
 
         # result_fp.write("knn_{},c_true, dav, cal, sil,sdbw\n".format(knn))
         knn=500
-
         result_fp.write("class_num_{},".format(c_true))
         D = Ifuns.EuDist2(X_embedding, X_embedding, squared=True)
         np.fill_diagonal(D, -1)
@@ -347,14 +346,41 @@ def STGNNks_on_ST(args):
         # Ann_df = pd.read_csv('./metadata.tsv', sep='\t')
         # ARI = np.round(metrics.adjusted_rand_score(y_pred, Ann_df['fine_annot_type']), 3)
         # NMI = np.round(metrics.normalized_mutual_info_score(y_pred, Ann_df['fine_annot_type']), 3)
-
-
+        print("dav:", dav)
+        print("cal:", cal)
+        print("sil:", sil)
+        print("sdbw:", sdbw)
         all_data = []  # txt: cell_id, cell batch, cluster type
 
         for index in range(num_cell):
             all_data.append([index, y_pred[index]])
         np.savetxt(f"‘./types.txt", np.array(all_data),fmt='%3d', delimiter='\t')
         pd.DataFrame(np.hstack(pred_list))
+        df = pd.DataFrame(np.hstack(pred_list))
+        df.to_csv(f"./500.csv")
+        # 空间可变基因
+        adata =  sc.read_visium("./Adult Mouse Brain (FFPE)")
+        counts = pd.DataFrame(adata.X.todense(), columns=adata.var_names, index=adata.obs_names)
+        coord = pd.DataFrame(adata.obsm['spatial'], columns=['x_coord', 'y_coord'], index=adata.obs_names)
+        results = SpatialDE.run(coord, counts)
+        results.index = results["g"]
+        df_data = pd.DataFrame(adata.var)
+        search_list = results.index.tolist()
+        data_list = []
+        for col_name in search_list:
+            data_list.append(df_data.loc[col_name, :])
+        df = pd.DataFrame(data_list)
+        results = pd.DataFrame(results)
+        results.to_csv(f"./results.csv")
+        adata.var = pd.concat([adata.var, results.loc[df.index.values, :]], axis=1)
+        adata.var.to_csv(f"./adata.var.csv")
+        df_results = results.sort_values("qval").head(10)
+        df_results.to_csv(f"./results.sort_values.csv")
+        sc.pl.spatial(adata, img_key="hires", color=["COL1A2", "SYPL1"], alpha=0.7)
+        plt.savefig(f"./spatial.jpg")
+        result_fp.close()
+
+
 
 
 
