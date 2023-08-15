@@ -1,6 +1,6 @@
 ## Overview
 <p align="center">
-  <img width="700"  src="https://github.com/hxzhard/STGNNks/tree/main/framework/framework.jpg">
+  <img width="700"  src="[https://github.com/hxzhard/STGNNks/tree/main/framework/framework.jpg">
 </p>
 
 ## Data
